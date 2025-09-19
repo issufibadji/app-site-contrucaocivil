@@ -61,6 +61,7 @@ Route::middleware('auth')->group(function () {
 Route::middleware('auth')->prefix('profile')->name('profile.')->group(function () {
     Route::get('/', [ProfileController::class, 'edit'])->name('edit');
     Route::patch('/', [ProfileController::class, 'update'])->name('update');
+    Route::post('/avatar', [ProfileController::class, 'updateAvatar'])->name('updateAvatar');
     Route::delete('/', [ProfileController::class, 'destroy'])->name('destroy');
 
     Route::get('/2fa/setup', [TwoFactorAuthController::class, 'show'])->name('2fa.setup');

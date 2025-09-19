@@ -38,8 +38,7 @@ import { ref, computed } from 'vue'
 import { usePage, router as Inertia } from '@inertiajs/vue3'
 
 const props = defineProps({
-  src:    { type: String, default: '' },
-  userId: { type: [String, Number], required: true },
+  src: { type: String, default: '' },
 })
 const emit = defineEmits(['updated'])
 
@@ -69,14 +68,18 @@ function onFileChange(e) {
   formData.append('avatar', file)
 
   Inertia.post(
-    route('profile.updateAvatar', { user: props.userId }),
+    route('profile.updateAvatar'),
     formData,
     {
       preserveScroll: true,
       onSuccess: page => {
-        // recupera a URL nova do avatar e emite para o pai
         const newUrl = page.props.auth.user.avatar_url
         emit('updated', newUrl)
+      },
+      onFinish: () => {
+        if (fileInput.value) {
+          fileInput.value.value = ''
+        }
       },
     }
   )

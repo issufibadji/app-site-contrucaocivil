@@ -2,7 +2,6 @@
   <div class="flex items-center space-x-4">
     <AvatarUploader
       :src="user.avatar_url"
-      :user-id="user.id"
       @updated="url => user.avatar_url = url"
     />
 

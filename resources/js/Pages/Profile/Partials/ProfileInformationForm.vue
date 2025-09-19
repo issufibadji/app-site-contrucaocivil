@@ -14,9 +14,18 @@ const form = useForm({
 })
 
 function submitForm() {
-  form.patch(route('profile.update'), {
-    preserveScroll: true,
-  })
+  form
+    .transform(data => ({
+      ...data,
+      current_password: data.current_password || null,
+      password: data.password || null,
+      password_confirmation: data.password_confirmation || null,
+    }))
+    .patch(route('profile.update'), {
+      preserveScroll: true,
+      onSuccess: () =>
+        form.reset('current_password', 'password', 'password_confirmation'),
+    })
 }
 
 function deleteAccount() {
