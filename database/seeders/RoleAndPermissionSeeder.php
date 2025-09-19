@@ -27,7 +27,7 @@ class RoleAndPermissionSeeder extends Seeder
         // Criação dos papéis
         $master = Role::firstOrCreate(['name' => 'master']);           // Suporte técnico/TI
         $admin = Role::firstOrCreate(['name' => 'admin']);             // Administrador do negócio
-        $professional = Role::firstOrCreate(['name' => 'professional']);// Colaborador/prestador
+
         $client = Role::firstOrCreate(['name' => 'client']);           // Usuário externo
 
         // Lista de permissões
@@ -59,9 +59,8 @@ class RoleAndPermissionSeeder extends Seeder
             'menu-all',
             'yourself'
         ]);
-
-        $professional->syncPermissions([]);
-
-        $client->syncPermissions([]);
+        $client->syncPermissions([
+            'yourself'
+        ]);
     }
 }

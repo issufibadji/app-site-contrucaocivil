@@ -34,12 +34,6 @@ class DatabaseSeeder extends Seeder
             'email' => 'admin@agender.com',
         ]);
 
-        // Profissional colaborador
-        $professional = User::factory()->create([
-            'name' => 'Prestador Pedro',
-            'email' => 'pedro@agender.com',
-        ]);
-
         // Cliente externo
         $client = User::factory()->create([
             'name' => 'Cliente Externo',
@@ -49,7 +43,6 @@ class DatabaseSeeder extends Seeder
         // Atribui papéis
         $master->assignRole('master');
         $admin->assignRole('admin');
-        $professional->assignRole('professional');
         $client->assignRole('client');
 
         // Permissões diretas opcionais
