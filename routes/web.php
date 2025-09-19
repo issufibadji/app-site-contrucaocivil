@@ -17,7 +17,6 @@ use App\Http\Controllers\{
     TwoFactorAuthController,
     MenuSideBarController,
     AppConfigController,
-    ReportController,
     NotificationController,
     PushSubscriptionController,
     AgendaAiAddressEstablishmentController,
@@ -326,15 +325,6 @@ Route::middleware(['auth','can:configs-all'])->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
-    Route::resource('relatorios', ReportController::class);
-
-    Route::post('relatorios/preview', [ReportController::class, 'previewReport'])->name('relatorios.preview');
-    Route::post('relatorios/related-tables', [ReportController::class, 'listaTabelasRelacionadas'])->name('relatorios.relatedTables');
-    Route::post('relatorios/columns-fk', [ReportController::class, 'listaColunasFK'])->name('relatorios.columnsFk');
-    Route::post('relatorios/columns-pk', [ReportController::class, 'listaColunasPK'])->name('relatorios.columnsPk');
-    Route::post('relatorios/columns', [ReportController::class, 'listaColunas'])->name('relatorios.columns');
-    Route::get('relatorios/render/{reportUuid}', [ReportController::class, 'executeReport'])->name('relatorios.renderReport');
-
     Route::get('notifications/unread', [NotificationController::class, 'unread'])->name('notifications.unread');
     Route::post('notifications/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
     Route::post('notifications/mark-all-read', [NotificationController::class, 'markAllRead'])->name('notifications.markAllRead');
