@@ -6,6 +6,7 @@ import NotificationsDropdown from '@/Components/NotificationsDropdown.vue'
 const page = usePage()
 const user = computed(() => page.props.auth.user)
 const sidebarOpen = ref(false)
+const sidebarCollapsed = ref(false)
 const isDark = ref(false)
 const dropdownOpen = ref(false)
 const sideMenus = computed(() => page.props.sideMenus ?? [])
@@ -26,10 +27,15 @@ const filteredMenus = computed(() =>
 onMounted(() => {
   isDark.value = localStorage.getItem('theme') === 'dark'
   updateHtmlClass()
+  sidebarCollapsed.value = localStorage.getItem('sidebar-collapsed') === '1'
 })
 
 function toggleSidebar() {
   sidebarOpen.value = !sidebarOpen.value
+}
+function toggleSidebarCollapse() {
+  sidebarCollapsed.value = !sidebarCollapsed.value
+  localStorage.setItem('sidebar-collapsed', sidebarCollapsed.value ? '1' : '0')
 }
 function toggleDarkMode() {
   isDark.value = !isDark.value
@@ -91,14 +97,17 @@ function defaultTextClass(groupName) {
   <div class="flex min-h-screen bg-blue-custom-50 dark:bg-gray-800">
     <!-- Sidebar -->
     <aside :class="[
-      'fixed z-40 lg:static transform transition-transform duration-300 ease-in-out w-64 bg-blue-custom-extra text-white flex flex-col',
-      sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+      'fixed z-40 lg:static transform transition-all duration-300 ease-in-out bg-blue-custom-extra text-white flex flex-col',
+      sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
+      sidebarCollapsed ? 'w-20' : 'w-64'
     ]">
-      <div class="p-4 border-b border-blue-custom-extra flex items-center justify-between">
-        <img :src="appIcon" :alt="appName" class="h-32 w-auto" />
-        <!-- <span class="text-xl font-bold">{{ appName }}</span> -->
+      <div :class="[
+        'p-4 border-b border-blue-custom-extra flex items-center justify-center transition-all duration-300',
+        sidebarCollapsed ? 'px-2' : 'px-4'
+      ]">
+        <img :src="appIcon" :alt="appName" :class="[sidebarCollapsed ? 'h-12' : 'h-32', 'w-auto transition-all duration-300']" />
       </div>
-      <div class="p-2">
+      <div v-if="!sidebarCollapsed" class="p-2">
         <div class="relative">
           <input type="text" class="w-full bg-blue-custom-extra text-white rounded-md pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Search...">
           <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -106,14 +115,21 @@ function defaultTextClass(groupName) {
           </div>
         </div>
       </div>
-        <nav class="flex-1 px-2 space-y-2">
-        <Link href="/dashboard" class="flex items-center px-4 py-2 text-sm font-medium rounded-lg bg-blue-custom-extra text-white hover:bg-blue-custom-700">
-            <i class="fas fa-home mr-3 w-4"></i> Dashboard
+        <nav :class="['flex-1 space-y-2 overflow-y-auto', sidebarCollapsed ? 'px-1' : 'px-2']">
+        <Link
+          href="/dashboard"
+          :class="[
+            'flex items-center px-4 py-2 text-sm font-medium rounded-lg bg-blue-custom-extra text-white hover:bg-blue-custom-700 transition-colors',
+            sidebarCollapsed ? 'justify-center' : ''
+          ]"
+        >
+            <i :class="['fas fa-home', sidebarCollapsed ? 'text-lg' : 'mr-3 w-4']"></i>
+            <span v-if="!sidebarCollapsed" class="ml-2">Dashboard</span>
         </Link>
 
         <template v-for="(items, groupName) in groupedMenus" :key="groupName">
             <div class="mt-4 border-t border-blue-custom-extra pt-2">
-            <p :class="'text-xs px-4 uppercase tracking-widest mb-1 ' + defaultTextClass(groupName)">
+            <p v-if="!sidebarCollapsed" :class="'text-xs px-4 uppercase tracking-widest mb-1 ' + defaultTextClass(groupName)">
                 {{ groupName }}
             </p>
 
@@ -123,22 +139,28 @@ function defaultTextClass(groupName) {
                 v-if="!item.children.length"
                 :href="`/${item.route}`"
                 :class="[
-                    'flex items-center px-4 py-2 text-sm hover:text-white hover:bg-blue-custom-700 rounded-lg',
-                    item?.style || defaultTextClass(groupName)
+                    'flex items-center px-4 py-2 text-sm hover:text-white hover:bg-blue-custom-700 rounded-lg transition-colors',
+                    item?.style || defaultTextClass(groupName),
+                    sidebarCollapsed ? 'justify-center' : ''
                 ]"
                 >
-                <i :class="`fas ${item.icon} mr-3 w-4`"></i> {{ item.description }}
+                <i :class="['fas', item.icon, sidebarCollapsed ? 'text-lg' : 'mr-3 w-4']"></i>
+                <span v-if="!sidebarCollapsed" class="ml-2">{{ item.description }}</span>
                 </Link>
 
                 <!-- Menu com filhos (dropdown) -->
-                <div v-else class="pl-2">
+                <div v-else :class="sidebarCollapsed ? 'px-0' : 'pl-2'">
                 <p
                     class="flex items-center px-4 py-2 text-sm font-semibold text-white"
-                    :class="item?.style || defaultTextClass(groupName)"
+                    :class="[
+                        item?.style || defaultTextClass(groupName),
+                        sidebarCollapsed ? 'justify-center' : ''
+                    ]"
                 >
-                    <i :class="`fas ${item.icon} mr-3 w-4`"></i> {{ item.description }}
+                    <i :class="['fas', item.icon, sidebarCollapsed ? 'text-lg' : 'mr-3 w-4']"></i>
+                    <span v-if="!sidebarCollapsed" class="ml-2">{{ item.description }}</span>
                 </p>
-                <div class="ml-4">
+                <div v-if="!sidebarCollapsed" class="ml-4">
                     <Link
                     v-for="child in item.children"
                     :key="child.id"
@@ -157,11 +179,21 @@ function defaultTextClass(groupName) {
         </template>
         </nav>
 
-      <div class="p-4 border-t border-blue-custom-extra flex items-center">
-        <img class="h-8 w-8 rounded-full" :src="`https://ui-avatars.com/api/?name=${user.name}`" alt="Avatar">
-        <div class="ml-3">
-          <p class="text-sm font-medium text-white">{{ user.name }}</p>
-          <p class="text-xs text-blue-custom-400">View profile</p>
+      <div class="p-4 border-t border-blue-custom-extra space-y-3">
+        <button
+          type="button"
+          class="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-white bg-blue-custom-600 hover:bg-blue-custom-700 rounded-lg transition-colors"
+          @click="toggleSidebarCollapse"
+        >
+          <i :class="['fas', sidebarCollapsed ? 'fa-angles-right' : 'fa-angles-left']"></i>
+          <span v-if="!sidebarCollapsed">{{ sidebarCollapsed ? 'Expandir menu' : 'Recolher menu' }}</span>
+        </button>
+        <div class="flex items-center justify-center">
+          <img class="h-8 w-8 rounded-full" :src="`https://ui-avatars.com/api/?name=${user.name}`" alt="Avatar">
+          <div v-if="!sidebarCollapsed" class="ml-3 text-left">
+            <p class="text-sm font-medium text-white">{{ user.name }}</p>
+            <p class="text-xs text-blue-custom-400">View profile</p>
+          </div>
         </div>
       </div>
     </aside>
