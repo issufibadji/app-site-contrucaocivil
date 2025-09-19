@@ -1,8 +1,8 @@
 <template>
   <div class="flex items-center space-x-4">
     <AvatarUploader
-      :src="user.avatar_url"
-      @updated="url => user.avatar_url = url"
+      :src="avatarSrc"
+      @updated="handleAvatarUpdated"
     />
 
     <div>
@@ -13,9 +13,22 @@
 </template>
 
 <script setup>
+import { computed, ref, watch } from 'vue'
 import { usePage } from '@inertiajs/vue3'
 import AvatarUploader from '@/Components/AvatarUploader.vue'
 
 const page = usePage()
-const user = page.props.auth.user
+const user = computed(() => page.props.auth.user ?? {})
+const avatarSrc = ref(user.value.avatar_url || '')
+
+watch(
+  () => user.value.avatar_url,
+  value => {
+    avatarSrc.value = value || ''
+  }
+)
+
+function handleAvatarUpdated(url) {
+  avatarSrc.value = url
+}
 </script>
