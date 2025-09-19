@@ -23,13 +23,22 @@ class MenuSidebarSeeder extends Seeder
         // menus disponíveis apenas para os módulos ativos do sistema
         $menuStructure = [
             [
+                'description' => 'Meu Perfil',
+                'icon'        => 'fa-user',
+                'level'       => 1,
+                'route'       => 'profile',
+                'acl'         => 'yourself',
+                'group'       => 'Área Operacional',
+                'order'       => 1,
+            ],
+            [
                 'description' => 'Dashboard',
                 'icon'        => 'fa-home',
                 'level'       => 1,
                 'route'       => 'dashboard',
                 'acl'         => null,
                 'group'       => 'Área Operacional',
-                'order'       => 1,
+                'order'       => 2,
             ],
             [
                 'description' => 'Notificações',
