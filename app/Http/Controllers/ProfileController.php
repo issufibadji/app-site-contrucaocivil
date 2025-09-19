@@ -8,7 +8,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 use PragmaRX\Google2FA\Google2FA;
 use Illuminate\Support\Facades\Crypt;
 use BaconQrCode\Renderer\ImageRenderer;
@@ -91,13 +92,21 @@ class ProfileController extends Controller
         ]);
 
         if ($user->avatar_path) {
-            Storage::disk('public')->delete($user->avatar_path);
+            File::delete([
+                public_path('storage/'.$user->avatar_path),
+                storage_path('app/public/'.$user->avatar_path),
+            ]);
         }
 
-        $path = $validated['avatar']->store('avatars', 'public');
+        $file = $validated['avatar'];
+        $filename = Str::uuid().'.'.$file->getClientOriginalExtension();
+        $directory = public_path('storage/avatars');
+
+        File::ensureDirectoryExists($directory);
+        $file->move($directory, $filename);
 
         $user->forceFill([
-            'avatar_path' => $path,
+            'avatar_path' => 'avatars/'.$filename,
         ])->save();
 
         return Redirect::route('profile.edit')->with('status', 'avatar-updated');

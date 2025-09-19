@@ -13,7 +13,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Minishlink\WebPush\Subscription;
 use Minishlink\WebPush\WebPush;
 use App\Models\PushSubscription;
-use Illuminate\Support\Facades\Storage;
 
 /**
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PushSubscription> $pushSubscriptions
@@ -79,7 +78,7 @@ class User extends Authenticatable implements AuditableContract
     public function getAvatarUrlAttribute(): string
     {
         if ($this->avatar_path) {
-            return Storage::disk('public')->url($this->avatar_path);
+            return asset('storage/'.$this->avatar_path);
         }
 
         return 'https://ui-avatars.com/api/?name=' . urlencode($this->name ?? '');
