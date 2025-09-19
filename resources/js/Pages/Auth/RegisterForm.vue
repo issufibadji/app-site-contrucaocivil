@@ -66,19 +66,6 @@
       <p v-if="form.errors.password_confirmation" class="mt-2 text-sm text-red-600">{{ form.errors.password_confirmation }}</p>
     </div>
 
-    <!-- Phone -->
-    <div class="mb-6">
-      <label class="block text-sm font-medium text-gray-700 mb-2">Telefone</label>
-      <input
-        type="text"
-        v-model="form.phone"
-        required
-        class="w-full px-4 py-3 rounded-lg bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-blue-custom-400 focus:bg-white"
-        placeholder="(00) 00000-0000"
-      />
-      <p v-if="form.errors.phone" class="mt-2 text-sm text-red-600">{{ form.errors.phone }}</p>
-    </div>
-
 
     <button
       type="submit"
@@ -107,12 +94,11 @@ const form = useForm({
   email: '',
   password: '',
   password_confirmation: '',
-  phone: '',
 })
 
 const submit = () => {
   form.post(route('register'), {
-    onFinish: () => form.reset('password', 'password_confirmation', 'phone'),
+    onFinish: () => form.reset('password', 'password_confirmation'),
   })
 }
 </script>

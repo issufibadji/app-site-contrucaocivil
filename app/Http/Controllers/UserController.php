@@ -13,18 +13,41 @@ class UserController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('search');
+        $active = $request->input('active');
+        $verified = $request->input('verified');
 
         $users = User::query()
-            ->when($search, function ($query, $search) {
-                $query->where('name', 'like', "%{$search}%")
-                      ->orWhere('email', 'like', "%{$search}%");
+            ->when($search, function ($query, $term) {
+                $query->where(function ($inner) use ($term) {
+                    $inner->where('name', 'like', "%{$term}%")
+                          ->orWhere('email', 'like', "%{$term}%");
+                });
+            })
+            ->when($active !== null && $active !== '', function ($query) use ($active) {
+                $value = filter_var($active, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
+                if ($value === null) {
+                    return;
+                }
+
+                $query->where('active', $value);
+            })
+            ->when($verified !== null && $verified !== '', function ($query) use ($verified) {
+                $isVerified = filter_var($verified, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
+
+                if ($isVerified === null) {
+                    return;
+                }
+
+                $isVerified
+                    ? $query->whereNotNull('email_verified_at')
+                    : $query->whereNull('email_verified_at');
             })
             ->paginate(10)
             ->withQueryString();
 
         return Inertia::render('Admin/Users/Index', [
             'users' => $users,
-            'filters' => $request->only('search'),
+            'filters' => $request->only('search', 'active', 'verified'),
         ]);
     }
 
@@ -37,22 +60,22 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|confirmed|min:6',
-            'status' => 'required|in:active,inactive',
-            'two_factor_enabled' => 'boolean',
+            'active' => 'required|boolean',
+            'active_2fa' => 'boolean',
             'email_verified_at' => 'nullable|date',
         ]);
 
         User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'status' => $request->status,
-            'two_factor_enabled' => $request->two_factor_enabled ?? false,
-            'email_verified_at' => $request->email_verified_at,
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'active' => $validated['active'],
+            'active_2fa' => data_get($validated, 'active_2fa', false),
+            'email_verified_at' => $validated['email_verified_at'],
         ]);
 
         return redirect()->route('users.index')->with('success', 'Usuário criado com sucesso.');
@@ -70,22 +93,24 @@ class UserController extends Controller
 
    public function update(Request $request, User $user)
    {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => "required|email|unique:users,email,{$user->id}",
             'password' => 'nullable|confirmed|min:6',
-            'status' => 'required|in:active,inactive',
-            'two_factor_enabled' => 'boolean',
+            'active' => 'required|boolean',
+            'active_2fa' => 'boolean',
             'email_verified_at' => 'nullable|date',
         ]);
 
         $user->update([
-            'name' => $request->name,
-            'email' => $request->email,
-            'status' => $request->status,
-            'two_factor_enabled' => $request->two_factor_enabled ?? false,
-            'email_verified_at' => $request->email_verified_at,
-            'password' => $request->filled('password') ? Hash::make($request->password) : $user->password,
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'active' => $validated['active'],
+            'active_2fa' => array_key_exists('active_2fa', $validated)
+                ? (bool) $validated['active_2fa']
+                : $user->active_2fa,
+            'email_verified_at' => $validated['email_verified_at'],
+            'password' => $request->filled('password') ? Hash::make($validated['password']) : $user->password,
         ]);
 
         return redirect()->route('users.index')->with('success', 'Usuário atualizado com sucesso.');

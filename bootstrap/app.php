@@ -21,7 +21,6 @@ return Application::configure(basePath: dirname(__DIR__))
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
             '2fa' => \App\Http\Middleware\Ensure2FAIsVerified::class,
             'restrict.system.access' => \App\Http\Middleware\RestrictSystemAccess::class,
-            'establishment.redirect' => \App\Http\Middleware\RedirectEstablishmentUser::class,
         ]);
 
         //

@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Models\AgendaAiPhone;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -13,6 +12,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
+use Spatie\Permission\Models\Role;
 
 class RegisteredUserController extends Controller
 {
@@ -33,7 +33,6 @@ class RegisteredUserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:' . User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'phone' => 'required|string|max:20',
         ]);
 
         $user = User::create([
@@ -42,13 +41,9 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        $user->assignRole('admin');
-
-        // Registra telefone vinculado ao usuário
-        AgendaAiPhone::create([
-            'phone'   => $request->phone,
-            'user_id' => $user->id,
-        ]);
+        if (Role::where('name', 'admin')->exists()) {
+            $user->assignRole('admin');
+        }
 
         event(new Registered($user));
         Auth::login($user);

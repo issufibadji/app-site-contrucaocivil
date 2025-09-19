@@ -14,8 +14,8 @@ const form = useForm({
   email: props.user?.email || '',
   password: '',
   password_confirmation: '',
-  status: props.user?.status || 'active',
-  two_factor_enabled: props.user?.two_factor_enabled ?? false,
+  active: props.user?.active ?? true,
+  active_2fa: props.user?.active_2fa ?? false,
   email_verified_at: props.user?.email_verified_at
     ? new Date(props.user.email_verified_at).toISOString().slice(0, 16)
     : null,
@@ -70,21 +70,20 @@ function submit() {
 
         <!-- Status -->
         <div>
-          <label for="status" class="block text-sm font-medium text-blue-custom-700">Status</label>
-          <select v-model="form.status" id="status" class="input">
-            <option value="active">Ativo</option>
-            <option value="inactive">Inativo</option>
-          </select>
-          <InputError :message="form.errors.status" class="mt-1" />
+          <label class="inline-flex items-center gap-2">
+            <input type="checkbox" id="active" v-model="form.active" class="rounded" />
+            <span class="text-sm font-medium text-blue-custom-700">Usuário ativo</span>
+          </label>
+          <InputError :message="form.errors.active" class="mt-1" />
         </div>
 
         <!-- 2FA -->
         <div>
-          <label class="inline-flex items-center">
-            <input type="checkbox" v-model="form.two_factor_enabled" class="mr-2" />
-            Ativar autenticação em duas etapas (2FA)
+          <label class="inline-flex items-center gap-2">
+            <input type="checkbox" id="active_2fa" v-model="form.active_2fa" class="rounded" />
+            <span class="text-sm font-medium text-blue-custom-700">Ativar autenticação em duas etapas (2FA)</span>
           </label>
-          <InputError :message="form.errors.two_factor_enabled" class="mt-1" />
+          <InputError :message="form.errors.active_2fa" class="mt-1" />
         </div>
 
         <!-- Email verificado em -->

@@ -9,12 +9,14 @@
       <TwoFactorSetup
         :qr-code-url="qrCodeUrl"
         :secret-key="secretKey"
+        :user="user"
       />
     </div>
   </Card>
 </template>
 
 <script setup>
+import { usePage } from '@inertiajs/vue3'
 import Card from '@/Components/Card.vue'
 import TwoFactorSetup from '../TwoFactorSetup.vue'
 
@@ -22,4 +24,7 @@ const props = defineProps({
   qrCodeUrl: String,
   secretKey: String,
 })
+
+const page = usePage()
+const user = page.props.auth.user
 </script>

@@ -12,16 +12,16 @@ const props = defineProps({
 })
 
 const search = ref(props.filters.search || '')
-const status = ref(props.filters.status || '')
-const verified = ref(props.filters.verified || '')
+const active = ref(props.filters.active ?? '')
+const verified = ref(props.filters.verified ?? '')
 
 const loadingStatus = ref(null)
 const loading2FA = ref(null)
 
-watch([search, status, verified], () => {
+watch([search, active, verified], () => {
   router.get(route('users.index'), {
     search: search.value,
-    status: status.value,
+    active: active.value,
     verified: verified.value,
   }, {
     preserveState: true,
@@ -68,16 +68,16 @@ function toggle2FA(user) {
           class="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 w-1/3 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
         />
 
-        <select v-model="status" class="border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-2 py-2 rounded">
+        <select v-model="active" class="border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-2 py-2 rounded">
           <option value="">Status</option>
-          <option value="Ativo">Ativo</option>
-          <option value="Inativo">Inativo</option>
+          <option value="1">Ativo</option>
+          <option value="0">Inativo</option>
         </select>
 
         <select v-model="verified" class="border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-2 py-2 rounded">
           <option value="">E-mail Verificado</option>
-          <option value="Sim">Sim</option>
-          <option value="Não">Não</option>
+          <option value="1">Sim</option>
+          <option value="0">Não</option>
         </select>
       </div>
 

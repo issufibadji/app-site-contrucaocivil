@@ -14,6 +14,14 @@ const form = useForm({
   secret: props.secretKey, // novo campo
 });
 
+function showToast(type, message) {
+  if (typeof window !== 'undefined' && window.toast && typeof window.toast[type] === 'function') {
+    window.toast[type](message)
+  } else {
+    console[type === 'error' ? 'error' : 'log'](message)
+  }
+}
+
 // Verifica se 2FA está ativado
 const isActive2FA = computed(() => props.user?.active_2fa)
 
@@ -22,7 +30,7 @@ function enable2FA() {
   form.post(route('2fa.enable'), {
     preserveScroll: true,
     onSuccess: () => {
-      toast.success('2FA ativado com sucesso! 🎉')
+      showToast('success', '2FA ativado com sucesso! 🎉')
 
       // reset apenas o código e reatribui o secret
       form.reset('code')
@@ -32,7 +40,7 @@ function enable2FA() {
       router.reload({ only: ['auth'] })
     },
     onError: () => {
-      toast.error('Código inválido. Tente novamente.')
+      showToast('error', 'Código inválido. Tente novamente.')
     }
   })
 }
@@ -45,11 +53,11 @@ function disable2FA() {
       method: 'post',
       preserveScroll: true,
       onSuccess: () => {
-        toast.info('2FA desativado com sucesso.')
+        showToast('info', '2FA desativado com sucesso.')
         router.reload({ only: ['auth'] })
       },
       onError: () => {
-        toast.error('Erro ao desativar 2FA.')
+        showToast('error', 'Erro ao desativar 2FA.')
       }
     })
   }

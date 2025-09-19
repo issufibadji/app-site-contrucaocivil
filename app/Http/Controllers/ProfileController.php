@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\AgendaAiServiceCategory;
-use App\Models\AgendaAiAddressEstablishment as Address;
 use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
@@ -45,16 +43,16 @@ class ProfileController extends Controller
         $writer    = new Writer($renderer);
         $qrCodeSvg = $writer->writeString($qrCodeUrl);
 
-        $user = $request->user()->load(['professional.user', 'addresses']);
+        $user = $request->user();
 
         return Inertia::render('Profile/Edit', [
             'mustVerifyEmail' => $user instanceof MustVerifyEmail,
             'status'          => session('status'),
             'qrCodeUrl'       => 'data:image/svg+xml;base64,'.base64_encode($qrCodeSvg),
             'secretKey'       => $secret,
-            'professional'    => $user->professional,
-            'categories'      => AgendaAiServiceCategory::all(['id','name']),
-            'addresses'       => $user->addresses,
+            'professional'    => null,
+            'categories'      => [],
+            'addresses'       => [],
         ]);
     }
     /**
@@ -94,43 +92,4 @@ class ProfileController extends Controller
         return Redirect::to('/');
     }
 
-    /**
-     * Store a new address for the authenticated user.
-     */
-    public function storeAddress(Request $request): RedirectResponse
-    {
-        $data = $request->validate([
-            'cep'        => 'required|string|max:9',
-            'uf'         => 'required|string|max:2',
-            'city'       => 'required|string',
-            'street'     => 'required|string',
-            'complement' => 'nullable|string',
-        ]);
-
-        $request->user()->addresses()->create($data);
-
-        return Redirect::back();
-    }
-
-    /**
-     * Update an existing address of the authenticated user.
-     */
-    public function updateAddress(Request $request, Address $address): RedirectResponse
-    {
-        if ($address->user_id !== $request->user()->id) {
-            abort(403);
-        }
-
-        $data = $request->validate([
-            'cep'        => 'required|string|max:9',
-            'uf'         => 'required|string|max:2',
-            'city'       => 'required|string',
-            'street'     => 'required|string',
-            'complement' => 'nullable|string',
-        ]);
-
-        $address->update($data);
-
-        return Redirect::back();
-    }
 }

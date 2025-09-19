@@ -23,15 +23,9 @@ class RegistrationTest extends TestCase
             'email' => 'test@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
-            'phone' => '123456789',
         ]);
 
         $this->assertAuthenticated();
         $response->assertRedirect(route('dashboard', absolute: false));
-
-        $this->assertDatabaseHas('agendaai_phones', [
-            'user_id' => \App\Models\User::first()->id,
-            'phone'   => '123456789',
-        ]);
     }
 }

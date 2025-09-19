@@ -35,29 +35,11 @@ class RoleAndPermissionSeeder extends Seeder
             'permissions-all',
             'roles-all',
             'roles-user-all',
-            'plan-all',
             'configs-all',
-            'signature-all',
             'user-all',
             'audits-all',
             'notification-all',
             'menu-all',
-            'yourself',
-            'clients-all',
-            'professionals-all',
-            'appointments-all',
-            'requests-all',
-            'requests-received-all',
-            'schedules-all',
-            'schedule-availabilities-all',
-            'services-all',
-            'messages-all',
-            'addresses-all',
-            'phones-all',
-            'mensagens-settings-all',
-            'chat-link-settings-all',
-            'appointments-history-all',
-
         ];
 
         foreach ($permissions as $perm) {
@@ -65,69 +47,15 @@ class RoleAndPermissionSeeder extends Seeder
         }
 
         // Atribui permissões conforme níveis
-        $allPermissions = Permission::all();
-        $master->syncPermissions($allPermissions);
-
-        $master->syncPermissions([
-            'permissions-all',
-            'roles-all',
-            'roles-user-all',
-            'plan-all',
-            'configs-all',
-            'signature-all',
-            'user-all',
-            'audits-all',
-            'notification-all',
-            'menu-all',
-            'clients-all',
-            'professionals-all',
-            'appointments-all',
-            'schedules-all',
-            'schedule-availabilities-all',
-            'services-all',
-            'messages-all',
-            'addresses-all',
-            'phones-all',
-            'mensagens-settings-all',
-            'chat-link-settings-all',
-            'appointments-history-all',
-            'requests-received-all'
-        ]);
+        $master->syncPermissions($permissions);
 
         $admin->syncPermissions([
             'user-all',
-            'clients-all',
-            'professionals-all',
-            'appointments-all',
-            'requests-all',
-            'requests-received-all',
-            'schedules-all',
-            'appointments-history-all',
-            'schedule-availabilities-all',
-            'services-all',
-            'messages-all',
-            'addresses-all',
-            'phones-all',
             'notification-all',
         ]);
 
-        // Permissões limitadas
-        $professional->syncPermissions([
-            'schedule-availabilities-all',
-            'appointments-history-all',
-            'schedules-all',
-            'requests-all',
-            'requests-received-all',
-            'messages-all',
-            'yourself'
-        ]);
+        $professional->syncPermissions([]);
 
-        $client->syncPermissions([
-            'appointments-history-all',
-            'requests-all',
-            'messages-all',
-            'yourself'
-
-        ]);
+        $client->syncPermissions([]);
     }
 }
