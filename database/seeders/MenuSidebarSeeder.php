@@ -32,15 +32,6 @@ class MenuSidebarSeeder extends Seeder
                 'order'       => 1,
             ],
             [
-                'description' => 'Dashboard',
-                'icon'        => 'fa-home',
-                'level'       => 1,
-                'route'       => 'dashboard',
-                'acl'         => null,
-                'group'       => 'Área Operacional',
-                'order'       => 2,
-            ],
-            [
                 'description' => 'Notificações',
                 'icon'        => 'fa-bell',
                 'level'       => 2,
