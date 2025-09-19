@@ -87,12 +87,6 @@ Route::middleware(['auth', 'role:admin|master'])->group(function () {
         Route::post('/{user}/toggle-2fa', 'toggle2FA')->name('toggle-2fa');
     });
 
-    Route::middleware('permission:notification-all')->group(function () {
-        Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
-        Route::get('notifications/create', [NotificationController::class, 'create'])->name('notifications.create');
-        Route::post('notifications/send', [NotificationController::class, 'store'])->name('notifications.send');
-    });
-
     Route::middleware('permission:audits-all')->group(function () {
         Route::get('audits', [AuditController::class, 'index'])->name('audits.index');
         Route::get('audits/{audit}', [AuditController::class, 'show'])->name('audits.show');
@@ -106,6 +100,12 @@ Route::middleware('auth')->group(function () {
     Route::post('notifications/mark-all-read', [NotificationController::class, 'markAllRead'])->name('notifications.markAllRead');
 
     Route::post('push-subscriptions', [PushSubscriptionController::class, 'store'])->name('push-subscriptions.store');
+});
+
+Route::middleware(['auth', 'permission:notification-all'])->group(function () {
+    Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('notifications/create', [NotificationController::class, 'create'])->name('notifications.create');
+    Route::post('notifications/send', [NotificationController::class, 'store'])->name('notifications.send');
 });
 
 Route::middleware(['auth', 'restrict.system.access'])->group(function () {
