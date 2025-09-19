@@ -15,10 +15,24 @@ class RestrictSystemAccess
     {
         $user = auth()->user();
 
-        if (! $user || ! $user->hasAnyRole(['master'])) {
+        if (! $user) {
             abort(403, 'Acesso negado.');
         }
 
-        return $next($request);
+        if ($user->hasRole('master')) {
+            return $next($request);
+        }
+
+        $systemPermissions = [
+            'permissions-all',
+            'roles-all',
+            'menu-all',
+        ];
+
+        if ($user->hasAnyPermission($systemPermissions)) {
+            return $next($request);
+        }
+
+        abort(403, 'Acesso negado.');
     }
 }
