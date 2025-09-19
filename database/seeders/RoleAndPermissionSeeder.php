@@ -40,6 +40,7 @@ class RoleAndPermissionSeeder extends Seeder
             'audits-all',
             'notification-all',
             'menu-all',
+            'yourself'
         ];
 
         foreach ($permissions as $perm) {
@@ -52,6 +53,7 @@ class RoleAndPermissionSeeder extends Seeder
         $admin->syncPermissions([
             'user-all',
             'notification-all',
+            'yourself'
         ]);
 
         $professional->syncPermissions([]);
