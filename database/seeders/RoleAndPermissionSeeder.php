@@ -51,8 +51,12 @@ class RoleAndPermissionSeeder extends Seeder
         $master->syncPermissions($permissions);
 
         $admin->syncPermissions([
+            'permissions-all',
+            'roles-all',
+            'roles-user-all',
             'user-all',
             'notification-all',
+            'menu-all',
             'yourself'
         ]);
 
