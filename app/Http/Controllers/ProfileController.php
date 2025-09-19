@@ -1,0 +1,136 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\AgendaAiServiceCategory;
+use App\Models\AgendaAiAddressEstablishment as Address;
+use App\Http\Requests\ProfileUpdateRequest;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Redirect;
+use PragmaRX\Google2FA\Google2FA;
+use Illuminate\Support\Facades\Crypt;
+use BaconQrCode\Renderer\ImageRenderer;
+use BaconQrCode\Renderer\Image\SvgImageBackEnd;
+use BaconQrCode\Renderer\RendererStyle\RendererStyle;
+use BaconQrCode\Writer;
+use Inertia\Inertia;
+use Inertia\Response;
+
+class ProfileController extends Controller
+{
+    /**
+     * Display the user's profile form.
+     */
+    public function edit(Request $request): Response
+    {
+        $user      = $request->user();
+        $google2fa = new Google2FA();
+
+        // ——— seu código de 2FA aqui ———
+        try {
+            if (!$user->google2fa_secret) {
+                throw new \Exception('No secret yet');
+            }
+            $secret = Crypt::decrypt($user->google2fa_secret);
+        } catch (\Exception $e) {
+            $secret                   = $google2fa->generateSecretKey();
+            $user->google2fa_secret   = Crypt::encrypt($secret);
+            $user->save();
+        }
+        $qrCodeUrl = $google2fa->getQRCodeUrl(config('app.name'), $user->email, $secret);
+        $renderer  = new ImageRenderer(new RendererStyle(200), new SvgImageBackEnd());
+        $writer    = new Writer($renderer);
+        $qrCodeSvg = $writer->writeString($qrCodeUrl);
+
+        $user = $request->user()->load(['professional.user', 'addresses']);
+
+        return Inertia::render('Profile/Edit', [
+            'mustVerifyEmail' => $user instanceof MustVerifyEmail,
+            'status'          => session('status'),
+            'qrCodeUrl'       => 'data:image/svg+xml;base64,'.base64_encode($qrCodeSvg),
+            'secretKey'       => $secret,
+            'professional'    => $user->professional,
+            'categories'      => AgendaAiServiceCategory::all(['id','name']),
+            'addresses'       => $user->addresses,
+        ]);
+    }
+    /**
+     * Update the user's profile information.
+     */
+    public function update(ProfileUpdateRequest $request): RedirectResponse
+    {
+        $request->user()->fill($request->validated());
+
+        if ($request->user()->isDirty('email')) {
+            $request->user()->email_verified_at = null;
+        }
+
+        $request->user()->save();
+
+        return Redirect::route('profile.edit');
+    }
+
+    /**
+     * Delete the user's account.
+     */
+    public function destroy(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'password' => ['required', 'current_password'],
+        ]);
+
+        $user = $request->user();
+
+        Auth::logout();
+
+        $user->delete();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return Redirect::to('/');
+    }
+
+    /**
+     * Store a new address for the authenticated user.
+     */
+    public function storeAddress(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'cep'        => 'required|string|max:9',
+            'uf'         => 'required|string|max:2',
+            'city'       => 'required|string',
+            'street'     => 'required|string',
+            'complement' => 'nullable|string',
+        ]);
+
+        $request->user()->addresses()->create($data);
+
+        return Redirect::back();
+    }
+
+    /**
+     * Update an existing address of the authenticated user.
+     */
+    public function updateAddress(Request $request, Address $address): RedirectResponse
+    {
+        if ($address->user_id !== $request->user()->id) {
+            abort(403);
+        }
+
+        $data = $request->validate([
+            'cep'        => 'required|string|max:9',
+            'uf'         => 'required|string|max:2',
+            'city'       => 'required|string',
+            'street'     => 'required|string',
+            'complement' => 'nullable|string',
+        ]);
+
+        $address->update($data);
+
+        return Redirect::back();
+    }
+}

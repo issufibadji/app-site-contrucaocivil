@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@layer base {
+    /* estilos padrão */
+    body {
+        @apply bg-blue-custom-50 text-gray-900;
+    }
+    table {
+        @apply bg-white;
+    }
+    thead {
+        @apply bg-blue-custom-100;
+    }
+    th,
+    td {
+        @apply border border-gray-200;
+    }
+    input,
+    select,
+    textarea {
+        @apply bg-white text-gray-900 border border-gray-300;
+    }
+    /* estilos para o modo dark: use o seletor .dark no root (normalmente <html class="dark">) */
+    .dark body {
+        @apply bg-gray-800 text-gray-100;
+    }
+    .dark table {
+        @apply bg-gray-700;
+    }
+    .dark thead {
+        @apply bg-gray-800;
+    }
+    .dark th,
+    .dark td {
+        @apply border border-gray-600;
+    }
+    .dark input,
+    .dark select,
+    .dark textarea {
+        @apply bg-gray-700 text-gray-100 border border-gray-600;
+    }
+}
+
+
+/* Toastify */
+
+.Toastify__toast-container {
+    z-index: 9999;
+}
