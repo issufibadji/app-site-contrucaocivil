@@ -23,6 +23,7 @@ use App\Http\Controllers\{
     PublicSearchController,
     UserAdditionalDataController,
     UserAddressController,
+    ProfileSwitchController,
 };
 
 Route::get('/welcome', function () {
@@ -73,6 +74,8 @@ Route::middleware('auth')->prefix('profile')->name('profile.')->group(function (
     Route::post('/address', [UserAddressController::class, 'store'])->name('address.store');
     Route::put('/address', [UserAddressController::class, 'update'])->name('address.update');
     Route::delete('/address', [UserAddressController::class, 'destroy'])->name('address.destroy');
+
+    Route::post('/switch-profile', ProfileSwitchController::class)->name('switch');
 
     Route::get('/2fa/setup', [TwoFactorAuthController::class, 'show'])->name('2fa.setup');
     Route::post('/2fa/enable', [TwoFactorAuthController::class, 'enable'])->name('2fa.enable');

@@ -3,6 +3,8 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use Illuminate\Support\Str;
+use Spatie\Permission\Models\Role;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -41,12 +43,30 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // Atribui papéis
-        $master->assignRole('master');
-        $admin->assignRole('admin');
-        $client->assignRole('client');
+        $this->assignProfileWithRole($master, 'master');
+        $this->assignProfileWithRole($admin, 'admin');
+        $this->assignProfileWithRole($client, 'client');
 
         // Permissões diretas opcionais
         $admin->givePermissionTo('audits-all');
         $client->givePermissionTo('yourself');
+    }
+
+    private function assignProfileWithRole(User $user, string $roleName): void
+    {
+        $role = Role::where('name', $roleName)->first();
+
+        if (! $role) {
+            return;
+        }
+
+        $user->assignRole($role);
+
+        $profile = $user->profiles()->firstOrCreate(
+            ['role_id' => $role->id],
+            ['name' => Str::headline($role->name), 'is_default' => true]
+        );
+
+        $user->switchProfile($profile);
     }
 }

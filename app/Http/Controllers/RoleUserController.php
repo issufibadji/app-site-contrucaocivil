@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Spatie\Permission\Models\Role;
 
@@ -40,8 +41,20 @@ class RoleUserController extends Controller
         $user = User::findOrFail($validated['user_id']);
         $role = Role::findById($validated['role_id']);
 
-        if (!$user->hasRole($role)) {
+        if (! $user->hasRole($role)) {
             $user->assignRole($role);
+        }
+
+        $profile = $user->profiles()->firstOrCreate(
+            ['role_id' => $role->id],
+            [
+                'name' => Str::headline($role->name),
+                'is_default' => $user->profiles()->doesntExist(),
+            ]
+        );
+
+        if (! $user->currentProfile) {
+            $user->switchProfile($profile);
         }
 
         return back()->with('success', 'Papel atribuído ao usuário.');
@@ -61,8 +74,27 @@ class RoleUserController extends Controller
         $user = User::findOrFail($validated['user_id']);
         $role = Role::findById($validated['role_id']);
 
+        $currentProfile = $user->currentProfile;
+        $profileToDelete = $user->profiles()->where('role_id', $role->id)->first();
+
         if ($user->hasRole($role)) {
             $user->removeRole($role);
+        }
+
+        if ($profileToDelete) {
+            $profileId = $profileToDelete->id;
+            $profileToDelete->delete();
+
+            if ($currentProfile && $currentProfile->id === $profileId) {
+                $nextProfile = $user->profiles()->first();
+
+                if ($nextProfile) {
+                    $user->switchProfile($nextProfile);
+                } else {
+                    $user->forceFill(['current_profile_id' => null])->save();
+                    $user->syncRoles([]);
+                }
+            }
         }
 
         return back()->with('success', 'Papel removido do usuário.');

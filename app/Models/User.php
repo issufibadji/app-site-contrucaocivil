@@ -10,10 +10,13 @@ use Spatie\Permission\Traits\HasRoles;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 use OwenIt\Auditing\Auditable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Minishlink\WebPush\Subscription;
 use Minishlink\WebPush\WebPush;
 use App\Models\PushSubscription;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use App\Models\UserProfile;
+use InvalidArgumentException;
 
 /**
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PushSubscription> $pushSubscriptions
@@ -84,6 +87,38 @@ class User extends Authenticatable implements AuditableContract
     public function address(): HasOne
     {
         return $this->hasOne(UserAddress::class);
+    }
+
+    public function profiles(): HasMany
+    {
+        return $this->hasMany(UserProfile::class);
+    }
+
+    public function currentProfile(): BelongsTo
+    {
+        return $this->belongsTo(UserProfile::class, 'current_profile_id');
+    }
+
+    public function switchProfile(UserProfile $profile): void
+    {
+        if ($profile->user_id !== $this->id) {
+            throw new InvalidArgumentException('The provided profile does not belong to this user.');
+        }
+
+        $this->profiles()
+            ->where('id', '!=', $profile->id)
+            ->where('is_default', true)
+            ->update(['is_default' => false]);
+
+        if (! $profile->is_default) {
+            $profile->is_default = true;
+            $profile->save();
+        }
+
+        $this->forceFill(['current_profile_id' => $profile->id])->save();
+
+        $roleName = $profile->role?->name;
+        $this->syncRoles($roleName ? [$roleName] : []);
     }
 
     public function getAvatarUrlAttribute(): string
