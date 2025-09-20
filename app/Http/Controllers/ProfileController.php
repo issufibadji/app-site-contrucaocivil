@@ -8,6 +8,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 use PragmaRX\Google2FA\Google2FA;
 use Illuminate\Support\Facades\Crypt;
 use BaconQrCode\Renderer\ImageRenderer;
@@ -43,7 +45,7 @@ class ProfileController extends Controller
         $writer    = new Writer($renderer);
         $qrCodeSvg = $writer->writeString($qrCodeUrl);
 
-        $user = $request->user();
+        $user->load(['additionalData', 'address']);
 
         return Inertia::render('Profile/Edit', [
             'mustVerifyEmail' => $user instanceof MustVerifyEmail,
@@ -53,6 +55,8 @@ class ProfileController extends Controller
             'professional'    => null,
             'categories'      => [],
             'addresses'       => [],
+            'additionalData'  => $user->additionalData,
+            'address'         => $user->address,
         ]);
     }
     /**
@@ -60,15 +64,54 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
+        $data = $request->validated();
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        $user->fill([
+            'name' => $data['name'],
+            'email' => $data['email'],
+        ]);
+
+        if (!empty($data['password'])) {
+            $user->password = $data['password'];
         }
 
-        $request->user()->save();
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
+        }
 
-        return Redirect::route('profile.edit');
+        $user->save();
+
+        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+    }
+
+    public function updateAvatar(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'avatar' => ['required', 'image', 'max:2048'],
+        ]);
+
+        if ($user->avatar_path) {
+            File::delete([
+                public_path('storage/'.$user->avatar_path),
+                storage_path('app/public/'.$user->avatar_path),
+            ]);
+        }
+
+        $file = $validated['avatar'];
+        $filename = Str::uuid().'.'.$file->getClientOriginalExtension();
+        $directory = public_path('storage/avatars');
+
+        File::ensureDirectoryExists($directory);
+        $file->move($directory, $filename);
+
+        $user->forceFill([
+            'avatar_path' => 'avatars/'.$filename,
+        ])->save();
+
+        return Redirect::route('profile.edit')->with('status', 'avatar-updated');
     }
 
     /**
