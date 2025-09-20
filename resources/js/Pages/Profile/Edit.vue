@@ -35,18 +35,6 @@
             <SummaryCard :qr-code-url="qrCodeUrl" :secret-key="secretKey" />
           </template>
         </CardAccordion>
-
-        <CardAccordion :id="3" :openId="openCard" @toggle="toggleCard">
-          <template #icon>
-            <i class="fas fa-shield-halved text-2xl text-blue-custom-600"></i>
-          </template>
-          <template #title>Privacidade</template>
-          <template #summary>Preferências de comunicação e proteção de dados</template>
-          <template #details>
-            <PrivacyCard />
-            <CommunicationsCard class="mt-4" />
-          </template>
-        </CardAccordion>
       </div>
     </main>
   </AdminLayout>
@@ -59,8 +47,6 @@ import CardAccordion from '@/Components/CardAccordion.vue'
 import { usePage } from '@inertiajs/vue3'
 import ProfileInformationForm from './Partials/ProfileInformationForm.vue'
 import SummaryCard from './Partials/SummaryCard.vue'
-import PrivacyCard from './Partials/PrivacyCard.vue'
-import CommunicationsCard from './Partials/CommunicationsCard.vue'
 import ProfileHeader from './Partials/ProfileHeader.vue'
 
 const props = defineProps({
