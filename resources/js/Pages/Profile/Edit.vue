@@ -21,7 +21,11 @@
             </div>
           </template>
           <template #details>
-            <ProfileInformationForm />
+            <div class="space-y-8">
+              <ProfileInformationForm />
+              <AdditionalDataForm :additional-data="props.additionalData" />
+              <AddressForm :address="props.address" />
+            </div>
           </template>
         </CardAccordion>
 
@@ -46,12 +50,22 @@ import AdminLayout from '@/Layouts/AdminLayout.vue'
 import CardAccordion from '@/Components/CardAccordion.vue'
 import { usePage } from '@inertiajs/vue3'
 import ProfileInformationForm from './Partials/ProfileInformationForm.vue'
+import AdditionalDataForm from './Partials/AdditionalDataForm.vue'
+import AddressForm from './Partials/AddressForm.vue'
 import SummaryCard from './Partials/SummaryCard.vue'
 import ProfileHeader from './Partials/ProfileHeader.vue'
 
 const props = defineProps({
   qrCodeUrl: String,
   secretKey: String,
+  additionalData: {
+    type: Object,
+    default: null,
+  },
+  address: {
+    type: Object,
+    default: null,
+  },
 })
 
 const page = usePage()

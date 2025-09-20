@@ -21,6 +21,8 @@ use App\Http\Controllers\{
     PushSubscriptionController,
     DashboardController,
     PublicSearchController,
+    UserAdditionalDataController,
+    UserAddressController,
 };
 
 Route::get('/welcome', function () {
@@ -63,6 +65,14 @@ Route::middleware('auth')->prefix('profile')->name('profile.')->group(function (
     Route::patch('/', [ProfileController::class, 'update'])->name('update');
     Route::post('/avatar', [ProfileController::class, 'updateAvatar'])->name('updateAvatar');
     Route::delete('/', [ProfileController::class, 'destroy'])->name('destroy');
+
+    Route::post('/additional-data', [UserAdditionalDataController::class, 'store'])->name('additional-data.store');
+    Route::put('/additional-data', [UserAdditionalDataController::class, 'update'])->name('additional-data.update');
+    Route::delete('/additional-data', [UserAdditionalDataController::class, 'destroy'])->name('additional-data.destroy');
+
+    Route::post('/address', [UserAddressController::class, 'store'])->name('address.store');
+    Route::put('/address', [UserAddressController::class, 'update'])->name('address.update');
+    Route::delete('/address', [UserAddressController::class, 'destroy'])->name('address.destroy');
 
     Route::get('/2fa/setup', [TwoFactorAuthController::class, 'show'])->name('2fa.setup');
     Route::post('/2fa/enable', [TwoFactorAuthController::class, 'enable'])->name('2fa.enable');

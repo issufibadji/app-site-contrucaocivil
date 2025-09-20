@@ -45,7 +45,7 @@ class ProfileController extends Controller
         $writer    = new Writer($renderer);
         $qrCodeSvg = $writer->writeString($qrCodeUrl);
 
-        $user = $request->user();
+        $user->load(['additionalData', 'address']);
 
         return Inertia::render('Profile/Edit', [
             'mustVerifyEmail' => $user instanceof MustVerifyEmail,
@@ -55,6 +55,8 @@ class ProfileController extends Controller
             'professional'    => null,
             'categories'      => [],
             'addresses'       => [],
+            'additionalData'  => $user->additionalData,
+            'address'         => $user->address,
         ]);
     }
     /**
