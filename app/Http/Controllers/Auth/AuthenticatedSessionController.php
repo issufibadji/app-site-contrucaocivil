@@ -34,6 +34,17 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         $user = $request->user();
+        $user->loadMissing(['profiles.role', 'currentProfile.role']);
+
+        if ($user->currentProfile) {
+            $user->switchProfile($user->currentProfile);
+        } elseif ($user->profiles->isNotEmpty()) {
+            $defaultProfile = $user->profiles->firstWhere('is_default', true) ?? $user->profiles->first();
+
+            if ($defaultProfile) {
+                $user->switchProfile($defaultProfile);
+            }
+        }
 
         if ($user->two_factor_enabled) {
             return redirect()->route('two-factor');

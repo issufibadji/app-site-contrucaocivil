@@ -9,11 +9,15 @@ const sidebarOpen = ref(false)
 const sidebarCollapsed = ref(false)
 const isDark = ref(false)
 const dropdownOpen = ref(false)
+const profileDropdownOpen = ref(false)
+const switchingProfileId = ref(null)
 const sideMenus = computed(() => page.props.sideMenus ?? [])
 const roles = computed(() => page.props.auth.user.roles ?? [])
 const permissions = computed(() => page.props.auth.user.permissions ?? [])
 const appIcon = computed(() => page.props.app?.icon || '/images/logotipo3.png')
 const appName = computed(() => page.props.app?.name || 'Tcham Services')
+const profiles = computed(() => user.value?.profiles ?? [])
+const currentProfile = computed(() => user.value?.current_profile ?? null)
 
 const filteredMenus = computed(() =>
   sideMenus.value.filter(m => {
@@ -42,12 +46,40 @@ function toggleDarkMode() {
   localStorage.setItem('theme', isDark.value ? 'dark' : 'light')
   updateHtmlClass()
 }
+function toggleUserDropdown() {
+  dropdownOpen.value = !dropdownOpen.value
+
+  if (!dropdownOpen.value) {
+    profileDropdownOpen.value = false
+  }
+}
+function closeDropdown() {
+  dropdownOpen.value = false
+  profileDropdownOpen.value = false
+}
+function toggleProfileDropdown() {
+  profileDropdownOpen.value = !profileDropdownOpen.value
+}
 function updateHtmlClass() {
   const html = document.documentElement
   isDark.value ? html.classList.add('dark') : html.classList.remove('dark')
 }
 function logout() {
   router.post(route('logout'))
+}
+
+function switchProfile(profileId) {
+  if (switchingProfileId.value === profileId) return
+
+  switchingProfileId.value = profileId
+
+  router.post(route('profile.switch'), { profile_id: profileId }, {
+    preserveState: false,
+    onFinish: () => {
+      switchingProfileId.value = null
+      closeDropdown()
+    },
+  })
 }
 
 // ✅ Agrupando por level (grupos visuais)
@@ -209,13 +241,46 @@ function defaultTextClass(groupName) {
             <i :class="isDark ? 'fas fa-sun' : 'fas fa-moon'" class="text-lg"></i>
           </button>
           <div class="relative">
-            <button @click="dropdownOpen = !dropdownOpen" class="flex items-center space-x-2 focus:outline-none">
+            <button @click="toggleUserDropdown" class="flex items-center space-x-2 focus:outline-none">
               <img class="h-8 w-8 rounded-full" :src="user.avatar_url" alt="">
-              <span class="hidden md:inline-block text-sm font-medium text-blue-custom-600 dark:text-blue-custom-200">{{ user.name }}</span>
+              <span class="hidden md:inline-block text-sm font-medium text-blue-custom-600 dark:text-blue-custom-200">
+                {{ user.name }}
+                <template v-if="currentProfile">
+                  <span class="block text-xs font-normal text-blue-custom-400 dark:text-blue-custom-300">{{ currentProfile.name }}</span>
+                </template>
+              </span>
               <i class="fas fa-chevron-down text-xs text-blue-custom-500"></i>
             </button>
-            <div v-if="dropdownOpen" class="fixed inset-0 z-40" @click="dropdownOpen = false"></div>
+            <div v-if="dropdownOpen" class="fixed inset-0 z-40" @click="closeDropdown"></div>
             <div v-if="dropdownOpen" class="absolute right-0 mt-2 w-48 bg-white dark:bg-blue-custom-extra border border-blue-custom-200 dark:border-blue-custom-700 rounded-md shadow-lg z-50">
+              <button @click="toggleProfileDropdown" class="w-full flex items-center justify-between px-4 py-2 text-sm text-blue-custom-700 dark:text-blue-custom-200 hover:bg-blue-custom-100 dark:hover:bg-blue-custom-700 focus:outline-none">
+                <span><i class="fas fa-user-tag mr-2"></i>{{ currentProfile ? currentProfile.name : 'Selecionar perfil' }}</span>
+                <i :class="['fas', profileDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down', 'text-xs text-blue-custom-500']"></i>
+              </button>
+              <div v-if="profileDropdownOpen" class="border-t border-blue-custom-100 dark:border-blue-custom-700">
+                <p class="px-4 pt-2 text-xs uppercase tracking-wide text-blue-custom-400 dark:text-blue-custom-300">Perfis disponíveis</p>
+                <div class="py-1">
+                  <button
+                    v-for="profile in profiles"
+                    :key="profile.id"
+                    type="button"
+                    @click="switchProfile(profile.id)"
+                    :disabled="switchingProfileId === profile.id || (currentProfile && currentProfile.id === profile.id)"
+                    class="w-full flex items-center justify-between px-4 py-2 text-sm text-left hover:bg-blue-custom-100 dark:hover:bg-blue-custom-700"
+                    :class="[
+                      currentProfile && currentProfile.id === profile.id ? 'text-blue-custom-700 dark:text-blue-custom-100 font-semibold' : 'text-blue-custom-600 dark:text-blue-custom-200',
+                      switchingProfileId === profile.id ? 'opacity-60 cursor-wait' : ''
+                    ]"
+                  >
+                    <span>
+                      <i class="fas fa-user-circle mr-2"></i>{{ profile.name }}
+                      <span v-if="profile.role" class="block text-[11px] text-blue-custom-400 dark:text-blue-custom-300">{{ profile.role }}</span>
+                    </span>
+                    <i v-if="currentProfile && currentProfile.id === profile.id" class="fas fa-check text-green-500"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="border-t border-blue-custom-100 dark:border-blue-custom-700"></div>
               <Link href="/profile" class="block px-4 py-2 text-sm text-blue-custom-700 dark:text-blue-custom-200 hover:bg-blue-custom-100 dark:hover:bg-blue-custom-700">
                 <i class="fas fa-user mr-2"></i> Meu Perfil
               </Link>

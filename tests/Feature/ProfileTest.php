@@ -3,8 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Models\UserProfile;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use Spatie\Permission\Models\Role;
 
 class ProfileTest extends TestCase
 {
@@ -95,5 +97,40 @@ class ProfileTest extends TestCase
             ->assertRedirect('/profile');
 
         $this->assertNotNull($user->fresh());
+    }
+
+    public function test_user_can_switch_profiles(): void
+    {
+        $user = User::factory()->create();
+
+        $adminRole = Role::create(['name' => 'admin', 'guard_name' => 'web']);
+        $clientRole = Role::create(['name' => 'client', 'guard_name' => 'web']);
+
+        $adminProfile = UserProfile::create([
+            'user_id' => $user->id,
+            'role_id' => $adminRole->id,
+            'name' => 'Admin',
+            'is_default' => true,
+        ]);
+        $clientProfile = UserProfile::create([
+            'user_id' => $user->id,
+            'role_id' => $clientRole->id,
+            'name' => 'Client',
+            'is_default' => false,
+        ]);
+
+        $user->switchProfile($adminProfile);
+
+        $response = $this
+            ->actingAs($user)
+            ->post(route('profile.switch'), ['profile_id' => $clientProfile->id]);
+
+        $response->assertRedirect();
+
+        $user->refresh();
+
+        $this->assertSame($clientProfile->id, $user->current_profile_id);
+        $this->assertTrue($user->hasRole('client'));
+        $this->assertFalse($user->hasRole('admin'));
     }
 }

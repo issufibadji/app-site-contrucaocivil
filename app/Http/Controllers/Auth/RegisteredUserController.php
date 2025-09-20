@@ -9,6 +9,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -41,8 +42,17 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        if (Role::where('name', 'admin')->exists()) {
-            $user->assignRole('admin');
+        $adminRole = Role::where('name', 'admin')->first();
+
+        if ($adminRole) {
+            $user->assignRole($adminRole);
+
+            $profile = $user->profiles()->firstOrCreate(
+                ['role_id' => $adminRole->id],
+                ['name' => Str::headline($adminRole->name), 'is_default' => true]
+            );
+
+            $user->switchProfile($profile);
         }
 
         event(new Registered($user));
