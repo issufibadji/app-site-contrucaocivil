@@ -19,13 +19,29 @@ const form = useForm({
   secondary_phone: '',
 })
 
+function toDateInputValue(value) {
+  if (!value) return ''
+
+  if (typeof value === 'string') {
+    return value.includes('T') ? value.split('T')[0] : value
+  }
+
+  const date = new Date(value)
+
+  if (Number.isNaN(date.getTime())) {
+    return ''
+  }
+
+  return date.toISOString().slice(0, 10)
+}
+
 watch(
   () => props.additionalData,
   value => {
     form.defaults({
       cpf: value?.cpf ?? '',
       rg: value?.rg ?? '',
-      birth_date: value?.birth_date ?? '',
+      birth_date: toDateInputValue(value?.birth_date),
       phone: value?.phone ?? '',
       secondary_phone: value?.secondary_phone ?? '',
     })
@@ -40,6 +56,9 @@ function submitForm() {
 
   method(route(routeName), {
     preserveScroll: true,
+    onSuccess: () => {
+      form.clearErrors()
+    },
   })
 }
 

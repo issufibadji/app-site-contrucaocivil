@@ -11,14 +11,20 @@ class UserAddressController extends Controller
 {
     public function store(UserAddressRequest $request): RedirectResponse
     {
-        $request->user()->address()->updateOrCreate([], $request->validated());
+        $address = $request->user()->address()->firstOrNew([]);
+
+        $address->fill($request->validated());
+        $address->save();
 
         return Redirect::route('profile.edit')->with('status', 'address-saved');
     }
 
     public function update(UserAddressRequest $request): RedirectResponse
     {
-        $request->user()->address()->updateOrCreate([], $request->validated());
+        $address = $request->user()->address()->firstOrNew([]);
+
+        $address->fill($request->validated());
+        $address->save();
 
         return Redirect::route('profile.edit')->with('status', 'address-updated');
     }

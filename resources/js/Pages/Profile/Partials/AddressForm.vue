@@ -35,7 +35,7 @@ watch(
       city: value?.city ?? '',
       state: value?.state ?? '',
       country: value?.country ?? 'Brasil',
-      is_international: false,
+      is_international: Boolean(value?.is_international ?? false),
     })
     form.reset()
   },

@@ -11,14 +11,20 @@ class UserAdditionalDataController extends Controller
 {
     public function store(AdditionalDataRequest $request): RedirectResponse
     {
-        $request->user()->additionalData()->updateOrCreate([], $request->validated());
+        $additionalData = $request->user()->additionalData()->firstOrNew([]);
+
+        $additionalData->fill($request->validated());
+        $additionalData->save();
 
         return Redirect::route('profile.edit')->with('status', 'additional-data-saved');
     }
 
     public function update(AdditionalDataRequest $request): RedirectResponse
     {
-        $request->user()->additionalData()->updateOrCreate([], $request->validated());
+        $additionalData = $request->user()->additionalData()->firstOrNew([]);
+
+        $additionalData->fill($request->validated());
+        $additionalData->save();
 
         return Redirect::route('profile.edit')->with('status', 'additional-data-updated');
     }
