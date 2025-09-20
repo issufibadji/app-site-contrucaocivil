@@ -12,6 +12,7 @@ class UserAdditionalData extends Model
     protected $table = 'user_additional_data';
 
     protected $fillable = [
+        'user_id',
         'cpf',
         'rg',
         'birth_date',

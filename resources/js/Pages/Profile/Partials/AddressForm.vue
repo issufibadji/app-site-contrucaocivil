@@ -35,7 +35,7 @@ watch(
       city: value?.city ?? '',
       state: value?.state ?? '',
       country: value?.country ?? 'Brasil',
-      is_international: value?.is_international ?? false,
+      is_international: false,
     })
     form.reset()
   },
@@ -78,32 +78,6 @@ function deleteRecord() {
       >
         Remover
       </button>
-    </div>
-
-    <div class="flex items-center gap-4">
-      <label class="text-sm font-medium text-gray-700">Localização</label>
-      <div class="inline-flex rounded-md shadow-sm" role="group">
-        <button
-          type="button"
-          :class="[
-            'px-3 py-1 border border-gray-300 text-sm font-medium rounded-l-md',
-            !form.is_international ? 'bg-blue-custom-600 text-white' : 'bg-white text-gray-700',
-          ]"
-          @click="form.is_international = false"
-        >
-          Moro no Brasil
-        </button>
-        <button
-          type="button"
-          :class="[
-            'px-3 py-1 border border-gray-300 text-sm font-medium rounded-r-md',
-            form.is_international ? 'bg-blue-custom-600 text-white' : 'bg-white text-gray-700',
-          ]"
-          @click="form.is_international = true"
-        >
-          Moro no exterior
-        </button>
-      </div>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
