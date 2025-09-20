@@ -14,9 +14,18 @@ const form = useForm({
 })
 
 function submitForm() {
-  form.patch(route('profile.update'), {
-    preserveScroll: true,
-  })
+  form
+    .transform(data => ({
+      ...data,
+      current_password: data.current_password || null,
+      password: data.password || null,
+      password_confirmation: data.password_confirmation || null,
+    }))
+    .patch(route('profile.update'), {
+      preserveScroll: true,
+      onSuccess: () =>
+        form.reset('current_password', 'password', 'password_confirmation'),
+    })
 }
 
 function deleteAccount() {
@@ -27,7 +36,7 @@ function deleteAccount() {
 </script>
 
 <template>
-  <div class="mt-6 border-t pt-6">
+  <form class="mt-6 border-t pt-6" @submit.prevent="submitForm">
     <h2 class="text-lg font-semibold text-blue-custom-800 dark:text-blue-custom-100">Dados da sua conta</h2>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
@@ -62,12 +71,12 @@ function deleteAccount() {
 
     <!-- Botões -->
     <div class="mt-6 flex items-center gap-4">
-      <button @click="submitForm" type="button" class="bg-blue-custom-600 hover:bg-blue-custom-800 text-white font-semibold px-4 py-2 rounded">
+      <button type="submit" class="bg-blue-custom-600 hover:bg-blue-custom-800 text-white font-semibold px-4 py-2 rounded">
         Salvar alterações
       </button>
       <button @click="deleteAccount" type="button" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">
         Excluir Conta
       </button>
     </div>
-  </div>
+  </form>
 </template>

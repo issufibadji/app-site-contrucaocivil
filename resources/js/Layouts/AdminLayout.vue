@@ -189,7 +189,7 @@ function defaultTextClass(groupName) {
           <span v-if="!sidebarCollapsed">{{ sidebarCollapsed ? 'Expandir menu' : 'Recolher menu' }}</span>
         </button>
         <div class="flex items-center justify-center">
-          <img class="h-8 w-8 rounded-full" :src="`https://ui-avatars.com/api/?name=${user.name}`" alt="Avatar">
+          <img class="h-8 w-8 rounded-full" :src="user.avatar_url" alt="Avatar">
           <div v-if="!sidebarCollapsed" class="ml-3 text-left">
             <p class="text-sm font-medium text-white">{{ user.name }}</p>
             <p class="text-xs text-blue-custom-400">View profile</p>
@@ -210,7 +210,7 @@ function defaultTextClass(groupName) {
           </button>
           <div class="relative">
             <button @click="dropdownOpen = !dropdownOpen" class="flex items-center space-x-2 focus:outline-none">
-              <img class="h-8 w-8 rounded-full" :src="`https://ui-avatars.com/api/?name=${user.name}`" alt="">
+              <img class="h-8 w-8 rounded-full" :src="user.avatar_url" alt="">
               <span class="hidden md:inline-block text-sm font-medium text-blue-custom-600 dark:text-blue-custom-200">{{ user.name }}</span>
               <i class="fas fa-chevron-down text-xs text-blue-custom-500"></i>
             </button>

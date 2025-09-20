@@ -2,8 +2,8 @@
 <template>
   <div class="relative group w-20 h-20">
     <img
-      v-if="src"
-      :src="src"
+      v-if="currentSrc"
+      :src="currentSrc"
       alt="Avatar"
       class="w-full h-full rounded-full object-cover"
     />
@@ -33,19 +33,27 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 // não precisa instalar @inertiajs/inertia: use o router do adapter Vue3
-import { usePage, router as Inertia } from '@inertiajs/vue3'
+import { usePage, router } from '@inertiajs/vue3'
 
 const props = defineProps({
-  src:    { type: String, default: '' },
-  userId: { type: [String, Number], required: true },
+  src: { type: String, default: '' },
 })
 const emit = defineEmits(['updated'])
 
 // pega o nome do usuário via usePage()
 const page = usePage()
 const name = computed(() => page.props.auth.user?.name || '')
+
+const currentSrc = ref(props.src)
+
+watch(
+  () => props.src,
+  value => {
+    currentSrc.value = value
+  }
+)
 
 // monta as iniciais
 const initials = computed(() =>
@@ -68,15 +76,32 @@ function onFileChange(e) {
   const formData = new FormData()
   formData.append('avatar', file)
 
-  Inertia.post(
-    route('profile.updateAvatar', { user: props.userId }),
+  const previousSrc = currentSrc.value
+  const previewUrl = URL.createObjectURL(file)
+  currentSrc.value = previewUrl
+
+  router.post(
+    route('profile.updateAvatar'),
     formData,
     {
       preserveScroll: true,
+      forceFormData: true,
       onSuccess: page => {
-        // recupera a URL nova do avatar e emite para o pai
         const newUrl = page.props.auth.user.avatar_url
+        currentSrc.value = newUrl
         emit('updated', newUrl)
+      },
+      onError: () => {
+        currentSrc.value = previousSrc
+      },
+      onCancel: () => {
+        currentSrc.value = previousSrc
+      },
+      onFinish: () => {
+        if (fileInput.value) {
+          fileInput.value.value = ''
+        }
+        URL.revokeObjectURL(previewUrl)
       },
     }
   )
